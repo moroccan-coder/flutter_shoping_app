@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_shoping/admin/add_category.dart';
 import 'package:flutter_shoping/admin/add_product.dart';
+import 'package:flutter_shoping/admin/categories.dart';
 import 'package:flutter_shoping/admin/products.dart';
 import 'package:flutter_shoping/authentication/firebase_auth.dart';
 
@@ -15,11 +17,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primaryColor: Colors.blue
-      ),
       debugShowCheckedModeBanner: false,
-      home: AuthTest(),
+      home: FutureBuilder(
+        future: Firebase.initializeApp(),
+        builder: (context, AsyncSnapshot snapshot) {
+          if (snapshot.hasError) {
+            return Container(
+              child: Center(
+                child: Text("Error!"),
+              ),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.done) {
+            return AuthTest();
+          }
+
+          return Container(
+            width: 0,
+          );
+        },
+      ),
     );
   }
 }
@@ -33,7 +51,7 @@ class _AuthTestState extends State<AuthTest> {
 
   @override
   Widget build(BuildContext context) {
-    return AddProduct();
+    return AllCategories();
   }
 }
 
