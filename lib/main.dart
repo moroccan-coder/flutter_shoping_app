@@ -38,6 +38,12 @@ class MyApp extends StatelessWidget {
           );
         },
       ),
+      routes: {
+        '/add_category': (context) => AddCategoryScreen(),
+        '/categories': (context) => AllCategories(),
+        '/add_product': (context) => AddProduct(),
+        '/products': (context) => AllProducts(),
+      },
     );
   }
 }
@@ -48,27 +54,59 @@ class AuthTest extends StatefulWidget {
 }
 
 class _AuthTestState extends State<AuthTest> {
-
   @override
   Widget build(BuildContext context) {
-    return AllCategories();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Flutter Shop"),
+      ),
+      drawer: Drawer(
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: ListView(
+            children: [
+              ListTile(
+                title: Text("Categories"),
+                onTap: (){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/categories");
+                },
+
+              ),
+
+              ListTile(
+                title: Text("Add Category"),
+                onTap: (){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/add_category");
+                },
+
+              )
+
+              ,
+              ListTile(
+                title: Text("Products"),
+                onTap: (){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/products");
+                },
+
+              ),
+              ListTile(
+                title: Text("New Product"),
+                onTap: (){
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed("/add_product");
+                },
+
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*
 * Container(

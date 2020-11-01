@@ -8,10 +8,10 @@ class AddCategoryScreen extends StatefulWidget {
 }
 
 class _AddCategoryScreenState extends State<AddCategoryScreen> {
-
   TextEditingController _titleController = TextEditingController();
   var _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void dispose() {
@@ -32,11 +32,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
     );
   }
 
-
-
-
-  Widget _loading()
-  {
+  Widget _loading() {
     return Container(
       child: Center(
         child: CircularProgressIndicator(),
@@ -44,8 +40,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
     );
   }
 
-
-  Widget _formField(){
+  Widget _formField() {
     return Form(
       key: _formKey,
       child: Column(
@@ -54,52 +49,65 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
         children: [
           TextFormField(
             controller: _titleController,
-            decoration: InputDecoration(
-                labelText: 'Category title'
-            ),
-
+            decoration: InputDecoration(labelText: 'Category title'),
             validator: (value) {
-              if(value.isEmpty)
-              {
+              if (value.isEmpty) {
                 return "Category title is required!";
-              }
-              else{
+              } else {
                 return null;
               }
             },
           ),
-          SizedBox(height: 8,),
+          SizedBox(
+            height: 8,
+          ),
           RaisedButton(
               child: Text("Save"),
-              onPressed: (){
-
-                if(_formKey.currentState.validate())
-                {
+              onPressed: () async {
+                if (_formKey.currentState.validate()) {
                   setState(() {
                     _isLoading = true;
                   });
-                  FirebaseFirestore.instance.collection("categories").doc().set(
-                      {
-                        'title' : _titleController.text,
-                      }
-                  ).then((value)  {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    _titleController.text = '';
 
-                  }).catchError((error) {
+                  var response = await FirebaseFirestore.instance.collection("categories").where('title', isEqualTo: _titleController.text).snapshots().first;
+
+                  if (response.size >= 1) {
                     setState(() {
                       _isLoading = false;
+                      _isError = true;
                     });
-                  });
+                  } else {
+                    FirebaseFirestore.instance.collection("categories").doc().set({
+                      'title': _titleController.text,
+                    }).then((value) {
+                      setState(() {
+                        _isLoading = false;
+                        _isError = false;
+                      });
+                      _titleController.text = '';
+                    }).catchError((error) {
+                      setState(() {
+                        _isLoading = false;
+                        _isError = false;
+                      });
+                    });
+                  }
                 }
-
-
-              })
+              }),
+          (_isError) ? _error() : Container(),
         ],
       ),
     );
   }
 
+  Widget _error() {
+    return Container(
+      child: Center(
+        child: Text(
+          "Duplicate Entry!",
+          style: TextStyle(color: Colors.red),
+        ),
+      ),
+    );
+  }
 }
