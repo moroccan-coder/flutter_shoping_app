@@ -8,13 +8,11 @@ import 'package:flutter_shoping/admin/add_product.dart';
 import 'package:flutter_shoping/admin/categories.dart';
 import 'package:flutter_shoping/admin/products.dart';
 import 'package:flutter_shoping/authentication/firebase_auth.dart';
-import 'package:flutter_shoping/screens/splash_screen.dart';
+import 'package:flutter_shoping/screens/login_screen.dart';
 
-void main() {
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
+
+class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,7 +29,7 @@ class MyApp extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.done) {
-            return SplashScreen();
+            return AuthTest();
           }
 
           return Container(
@@ -44,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/categories': (context) => AllCategories(),
         '/add_product': (context) => AddProduct(),
         '/products': (context) => AllProducts(),
+        '/login': (context) => LoginScreen(),
       },
     );
   }
@@ -100,6 +99,15 @@ class _AuthTestState extends State<AuthTest> {
                   Navigator.of(context).pushNamed("/add_product");
                 },
 
+              ),
+
+              ListTile(
+                title: Text("Logout"),
+                onTap: (){
+                 FirebaseAuthentication firebAuth = FirebaseAuthentication();
+                 firebAuth.signOut();
+                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen(),));
+                },
               )
             ],
           ),

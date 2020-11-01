@@ -13,6 +13,7 @@ class _AddProductState extends State<AddProduct> {
   TextEditingController _productPriceController = TextEditingController();
 
   String selectedValue;
+  bool _isError = false;
 
   @override
   void dispose() {
@@ -91,18 +92,32 @@ class _AddProductState extends State<AddProduct> {
                   color: Colors.blue,
                   onPressed: () {
                     if (_formKey.currentState.validate()) {
-                      _showLoaderDialog(context);
-                      FirebaseFirestore.instance.collection('products').doc().set({
-                        'product_title': _productTitleController.text,
-                        'product_description': _productDescriptionController.text,
-                        'product_price': double.parse(_productPriceController.text),
-                        'product_category' : selectedValue,
-                      }).then((value) {
-                        Navigator.pop(context);
-                        _productPriceController.text = '';
-                        _productTitleController.text = '';
-                        _productDescriptionController.text = '';
-                      }).catchError((onError)=>Navigator.pop(context));
+
+                      if(selectedValue==null)
+                        {
+                         setState(() {
+                           _isError =true;
+                         });
+                        }
+                      else
+                        {
+                          _showLoaderDialog(context);
+                          FirebaseFirestore.instance.collection('products').doc().set({
+                            'product_title': _productTitleController.text,
+                            'product_description': _productDescriptionController.text,
+                            'product_price': double.parse(_productPriceController.text),
+                            'product_category' : selectedValue,
+                          }).then((value) {
+                            Navigator.pop(context);
+                            _productPriceController.text = '';
+                            _productTitleController.text = '';
+                            _productDescriptionController.text = '';
+                          }).catchError((onError)=>Navigator.pop(context));
+                        }
+
+
+
+
                     }
                   },
                   child: Text(
@@ -110,6 +125,12 @@ class _AddProductState extends State<AddProduct> {
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+                SizedBox(height: 16,),
+                Container(
+                  child: Center(
+                    child: (_isError) ? Text("Category is required!",style: TextStyle(color: Colors.red),) : Container(),
+                  ),
+                )
 
               ],
             ),
@@ -140,6 +161,7 @@ class _AddProductState extends State<AddProduct> {
               onChanged: (String value) {
                 setState(() {
                   selectedValue = value;
+                  _isError =false;
                 });
               },
               value: selectedValue,
