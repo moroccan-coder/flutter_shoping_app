@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddProduct extends StatefulWidget {
   @override
@@ -14,6 +17,22 @@ class _AddProductState extends State<AddProduct> {
 
   String selectedValue;
   bool _isError = false;
+
+
+  File _image;
+  final picker = ImagePicker();
+
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -87,6 +106,22 @@ class _AddProductState extends State<AddProduct> {
                   height: 8,
                 ),
                 _selectCategory(),
+                SizedBox(height: 16,),
+                Row(
+                  children: [
+                    FlatButton(onPressed: ()=>getImage(), child: Row(children: [
+                      Icon(Icons.photo_size_select_actual_outlined,color: Colors.deepOrange,),
+                      SizedBox(width: 8,),
+                      Text("Add Image",style: TextStyle(color: Colors.deepOrange),),
+                    ],)),
+                    SizedBox(width: 32,),
+                    Container(
+                      height: 90,
+                      width: 90,
+                      child:  _image == null ? Text('No image selected.')  : Image.file(_image),
+                    )
+                  ],
+                ),
                 SizedBox(height: 16,),
                 RaisedButton(
                   color: Colors.blue,
