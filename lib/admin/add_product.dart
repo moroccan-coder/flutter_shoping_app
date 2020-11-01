@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -17,6 +18,8 @@ class _AddProductState extends State<AddProduct> {
 
   String selectedValue;
   bool _isError = false;
+
+  BuildContext dialogContext;
 
 
   File _image;
@@ -118,7 +121,7 @@ class _AddProductState extends State<AddProduct> {
                     Container(
                       height: 90,
                       width: 90,
-                      child:  _image == null ? Text('No image selected.')  : Image.file(_image),
+                      child:  _image == null ? Text('No image selected.',style: TextStyle(color: Colors.red),)  : Image.file(_image),
                     )
                   ],
                 ),
@@ -136,18 +139,16 @@ class _AddProductState extends State<AddProduct> {
                         }
                       else
                         {
-                          _showLoaderDialog(context);
-                          FirebaseFirestore.instance.collection('products').doc().set({
-                            'product_title': _productTitleController.text,
-                            'product_description': _productDescriptionController.text,
-                            'product_price': double.parse(_productPriceController.text),
-                            'product_category' : selectedValue,
-                          }).then((value) {
-                            Navigator.pop(context);
-                            _productPriceController.text = '';
-                            _productTitleController.text = '';
-                            _productDescriptionController.text = '';
-                          }).catchError((onError)=>Navigator.pop(context));
+                          if(_image!=null)
+                            {
+
+                              uploadImageToFirebase(context);
+
+                            }
+                          else{
+
+                          }
+
                         }
 
 
@@ -227,8 +228,38 @@ class _AddProductState extends State<AddProduct> {
     showDialog(barrierDismissible: false,
       context:context,
       builder:(BuildContext context){
+        dialogContext =context;
         return alert;
       },
+    );
+  }
+
+
+  Future uploadImageToFirebase(context) async {
+
+    var tim= DateTime.now().millisecondsSinceEpoch;
+
+    _showLoaderDialog(context);
+
+    StorageReference firebaseStorageRef = FirebaseStorage.instance.ref().child('products/$tim');
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    taskSnapshot.ref.getDownloadURL().then(
+          (value) {
+
+            FirebaseFirestore.instance.collection('products').doc().set({
+              'product_title': _productTitleController.text,
+              'product_description': _productDescriptionController.text,
+              'product_price': double.parse(_productPriceController.text),
+              'product_category' : selectedValue,
+              'product_img' : value,
+            }).then((value) {
+              Navigator.pop(dialogContext);
+              _productPriceController.text = '';
+              _productTitleController.text = '';
+              _productDescriptionController.text = '';
+            }).catchError((onError)=>Navigator.pop(dialogContext));
+          },
     );
   }
 }
